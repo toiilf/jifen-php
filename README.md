@@ -184,8 +184,11 @@ chmod 777 /var/www/html/jifen/sessions
 访问 http://your-domain.com/install 完成安装
 
 会话安全    	⭐⭐⭐⭐⭐	完整防护
+
 输入验证    	⭐⭐⭐⭐⭐	完整防护
+
 暴力破解    	⭐⭐⭐⭐⭐	完整防护
+
 
 # 📖 功能详解
 
