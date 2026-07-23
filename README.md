@@ -104,18 +104,18 @@ PHP版本选择 7.4 或更高
 网站设置 →「伪静态」
 
 选择「ThinkPHP」或输入：
-
+```bash
 nginx
 location / {
     try_files $uri $uri/ /index.php?$query_string;
 }
-
+```
 # 4. 设置目录权限
-bash
+```bash
 chown -R www:www /www/wwwroot/jifen/
 chmod -R 755 /www/wwwroot/jifen/
 chmod 777 /www/wwwroot/jifen/sessions/
-
+```
 # 5. 访问安装
 访问：http://你的域名/install
 
@@ -136,12 +136,13 @@ chmod 777 /www/wwwroot/jifen/sessions/
 
 # 部署方式二：手动部署
 # 1. 克隆代码
-bash
+```bash
 cd /var/www/html
 git clone https://github.com/your-repo/jifen-php.git
 cd jifen
-
+```
 # 2. 配置Nginx
+```bash
 nginx
 server {
     listen 80;
@@ -161,6 +162,7 @@ server {
     }
 
     # 安全：禁止访问敏感文件
+    
     location ~ /\.env {
         deny all;
     }
@@ -171,13 +173,13 @@ server {
         deny all;
     }
 }
-
+```
 # 3. 设置权限
-bash
+```bash
 chown -R www-data:www-data /var/www/html/jifen
 chmod -R 755 /var/www/html/jifen
 chmod 777 /var/www/html/jifen/sessions
-
+```
 # 4. 访问安装
 访问 http://your-domain.com/install 完成安装
 会话安全	⭐⭐⭐⭐⭐	完整防护
