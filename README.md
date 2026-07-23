@@ -138,7 +138,7 @@ chmod 777 /www/wwwroot/jifen/sessions/
 # 1. 克隆代码
 bash
 cd /var/www/html
-git clone https://github.com/your-repo/jifen.git
+git clone https://github.com/your-repo/jifen-php.git
 cd jifen
 
 # 2. 配置Nginx
