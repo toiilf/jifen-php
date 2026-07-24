@@ -82,7 +82,7 @@
         .my-card .my-info { flex: 1; }
         .my-card .name { font-size: 15px; font-weight: 700; color: #333; }
         .my-card .label { font-size: 11px; color: #999; }
-        .my-card .score { font-size: 28px; font-weight: 800; color: #667eea; text-align: right; }
+        .my-card .score { font-size: 28px; font-weight: 800; color: #667eea; text-align: right; transition: color 0.3s; }
         .my-card .score span { font-size: 13px; font-weight: 500; color: #999; }
         .my-card .owner-badge {
             display: inline-block;
@@ -231,6 +231,35 @@
         @supports (padding-bottom: env(safe-area-inset-bottom)) {
             .panel { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
         }
+        
+        /* ===== 积分变化动画 ===== */
+        @keyframes scoreFloat {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0) scale(1);
+            }
+            30% {
+                transform: translateX(-50%) translateY(-40px) scale(1.4);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-140px) scale(1);
+            }
+        }
+        
+        @keyframes glowFade {
+            0% { opacity: 1; transform: translateX(-50%) scale(0.5); }
+            100% { opacity: 0; transform: translateX(-50%) scale(2.5); }
+        }
+        
+        @keyframes scoreFlash {
+            0%, 100% { color: #667eea; transform: scale(1); }
+            50% { color: #ff4757; transform: scale(1.15); }
+        }
+        
+        .my-score-flash {
+            animation: scoreFlash 0.5s ease 3;
+        }
     </style>
 </head>
 <body>
@@ -365,6 +394,60 @@
             isRecovering: false,
             pageVisible: true
         };
+        
+        // ===== 积分变化动画 =====
+        function showScoreAnimation(amount, isReceive) {
+            // 移除旧动画
+            var oldAnim = document.querySelector('.score-animation');
+            if (oldAnim) oldAnim.remove();
+            var oldGlow = document.querySelector('.score-glow');
+            if (oldGlow) oldGlow.remove();
+            
+            // 创建动画元素
+            var animDiv = document.createElement('div');
+            animDiv.className = 'score-animation';
+            animDiv.style.position = 'fixed';
+            animDiv.style.left = '50%';
+            animDiv.style.top = '35%';
+            animDiv.style.transform = 'translateX(-50%)';
+            animDiv.style.fontSize = '60px';
+            animDiv.style.fontWeight = '900';
+            animDiv.style.pointerEvents = 'none';
+            animDiv.style.zIndex = '9999';
+            animDiv.style.textShadow = '0 4px 30px rgba(0,0,0,0.4)';
+            animDiv.style.animation = 'scoreFloat 1.2s ease-out forwards';
+            
+            var sign = isReceive ? '+' : '-';
+            var color = isReceive ? '#2ed573' : '#ff4757';
+            animDiv.textContent = sign + Math.abs(amount);
+            animDiv.style.color = color;
+            
+            // 创建光晕
+            var glow = document.createElement('div');
+            glow.className = 'score-glow';
+            glow.style.cssText = 'position:fixed;left:50%;top:35%;transform:translateX(-50%);width:140px;height:140px;border-radius:50%;pointer-events:none;z-index:9998;animation:glowFade 1.2s ease-out forwards;';
+            glow.style.background = 'radial-gradient(circle, ' + (isReceive ? 'rgba(46,213,115,0.25)' : 'rgba(255,71,87,0.25)') + ', transparent)';
+            
+            document.body.appendChild(glow);
+            document.body.appendChild(animDiv);
+            
+            setTimeout(function() {
+                if (animDiv.parentNode) animDiv.remove();
+                if (glow.parentNode) glow.remove();
+            }, 1300);
+        }
+        
+        // ===== 我的积分闪烁效果 =====
+        function flashMyScore() {
+            var scoreEl = document.getElementById('myScore');
+            if (!scoreEl) return;
+            scoreEl.classList.remove('my-score-flash');
+            void scoreEl.offsetWidth;
+            scoreEl.classList.add('my-score-flash');
+            setTimeout(function() {
+                scoreEl.classList.remove('my-score-flash');
+            }, 1600);
+        }
         
         // ===== 页面可见性检测 =====
         document.addEventListener('visibilitychange', function() {
@@ -585,7 +668,7 @@
             for (var i = 0; i < cards.length; i++) cards[i].classList.remove('selected');
         }
         
-        // ===== 转让积分（含防抖和CSRF） =====
+        // ===== 转让积分（含防抖和动画） =====
         function doTransfer() {
             // 防止重复点击
             if (transferLock) {
@@ -618,8 +701,19 @@
             .then(function(d) { 
                 if (d.success) { 
                     cancelTransfer();
-                    refreshData();
-                    setTimeout(refreshData, 500);
+                    
+                    // ===== 显示转出动画（红色减分） =====
+                    showScoreAnimation(amount, false);
+                    
+                    // 延迟刷新数据，让动画先播放
+                    setTimeout(function() {
+                        refreshData();
+                        flashMyScore();
+                    }, 300);
+                    
+                    // 额外刷新确保数据同步
+                    setTimeout(refreshData, 1200);
+                    
                 } else { 
                     alert(d.message || '转让失败，请重试'); 
                 }
