@@ -38,7 +38,7 @@
             background: white;
             border-radius: 20px;
             padding: 16px 20px;
-            margin-bottom: 12px;
+            margin-bottom: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -68,7 +68,7 @@
         
         .my-card {
             background: white; border-radius: 16px; padding: 16px 18px;
-            margin-bottom: 12px; display: flex; align-items: center; gap: 14px;
+            margin-bottom: 6px; display: flex; align-items: center; gap: 14px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 2px solid #667eea;
         }
         
@@ -96,7 +96,7 @@
             margin: 16px 0 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         
-        .players { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+        .players { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
         
         .player {
             background: white; border-radius: 16px; padding: 18px 20px;
@@ -146,6 +146,43 @@
         .record .r-to { color: #2ed573; font-weight: 600; }
         .record .r-time { font-size: 12px; color: #bbb; }
         .record .r-amount { font-weight: 700; font-size: 16px; color: #667eea; }
+        
+        /* ===== 转让记录折叠 ===== */
+        .record-more-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #f8f9fa;
+            border: 1px dashed #ddd;
+            border-radius: 10px;
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .record-more-btn:hover {
+            background: #e8ecf1;
+            border-color: #667eea;
+        }
+        .record-more-btn .arrow {
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+        .record-more-btn .arrow.open {
+            transform: rotate(180deg);
+        }
+        .record-item-hidden {
+            display: none !important;
+        }
+        .record-item-hidden.show {
+            display: flex !important;
+        }
+        .record {
+            transition: all 0.3s ease;
+        }
         
         .share-buttons { display: flex; gap: 10px; }
         .share-buttons button {
@@ -282,7 +319,6 @@
             <div class="score" id="myScore"><?php echo $myPlayer['current_score'] ?? 0; ?> <span>分</span></div>
         </div>
         
-        <div class="section-label">👥 点击下方玩家转让积分</div>
         <div class="players" id="playersList">
             <?php if (count($otherPlayers) > 0): ?>
                 <?php foreach ($otherPlayers as $p): ?>
@@ -307,8 +343,17 @@
             <h3>📋 转让记录</h3>
             <div id="transferHistory">
                 <?php if (isset($transfers) && count($transfers) > 0): ?>
+                    <?php 
+                        $totalRecords = count($transfers);
+                        $showCount = 9;
+                        $index = 0;
+                    ?>
                     <?php foreach ($transfers as $t): ?>
-                        <div class="record">
+                        <?php 
+                            $index++;
+                            $isHidden = $index > $showCount;
+                        ?>
+                        <div class="record <?php echo $isHidden ? 'record-item-hidden' : ''; ?>" data-index="<?php echo $index; ?>">
                             <div>
                                 <span class="r-from"><?php echo htmlspecialchars($t['from_nickname']); ?></span> → <span class="r-to"><?php echo htmlspecialchars($t['to_nickname']); ?></span>
                                 <div class="r-time"><?php echo date('Y-m-d H:i:s', strtotime($t['created_at'])); ?></div>
@@ -316,6 +361,12 @@
                             <div class="r-amount"><?php echo $t['amount']; ?> 分</div>
                         </div>
                     <?php endforeach; ?>
+                    <?php if ($totalRecords > $showCount): ?>
+                        <button class="record-more-btn" id="recordMoreBtn" onclick="toggleRecords()">
+                            展开更多 (<span id="hiddenCount"><?php echo $totalRecords - $showCount; ?></span> 条)
+                            <span class="arrow" id="recordArrow">▼</span>
+                        </button>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="empty" style="color:#999;">暂无转让记录</div>
                 <?php endif; ?>
@@ -365,6 +416,7 @@
         var roomId = <?php echo $room['id']; ?>;
         var userId = <?php echo $userId; ?>;
         var selectedId = null;
+        var recordsExpanded = false;  // 记录展开状态
         
         // ===== 防抖：防止快速点击 =====
         var transferLock = false;
@@ -394,6 +446,27 @@
             isRecovering: false,
             pageVisible: true
         };
+        
+        // ===== 转让记录展开/折叠 =====
+        function toggleRecords() {
+            var hiddenItems = document.querySelectorAll('.record-item-hidden');
+            var btn = document.getElementById('recordMoreBtn');
+            
+            recordsExpanded = !recordsExpanded;
+            
+            if (recordsExpanded) {
+                hiddenItems.forEach(function(item) {
+                    item.classList.add('show');
+                });
+                btn.innerHTML = '收起 <span class="arrow open">▲</span>';
+            } else {
+                hiddenItems.forEach(function(item) {
+                    item.classList.remove('show');
+                });
+                var hidden = document.querySelectorAll('.record-item-hidden').length;
+                btn.innerHTML = '展开更多 (<span id="hiddenCount">' + hidden + '</span> 条) <span class="arrow" id="recordArrow">▼</span>';
+            }
+        }
         
         // ===== 积分变化动画 =====
         function showScoreAnimation(amount, isReceive) {
@@ -597,7 +670,7 @@
                 list.innerHTML = html;
             }
             
-            // 更新转让记录
+            // ===== 更新转让记录（保留展开/折叠状态） =====
             var rec = document.getElementById('transferHistory');
             if (!rec || !data.transfers) return;
             
@@ -608,8 +681,11 @@
                 }
             } else {
                 var rh = '';
-                var showCount = Math.min(data.transfers.length, 50);
-                for (var j = 0; j < showCount; j++) {
+                var showCount = 9;
+                var totalRecords = data.transfers.length;
+                var hasHidden = totalRecords > showCount;
+                
+                for (var j = 0; j < data.transfers.length; j++) {
                     var t = data.transfers[j];
                     var date = new Date(t.created_at);
                     var time = date.getFullYear() + '-' + 
@@ -618,14 +694,38 @@
                                String(date.getHours()).padStart(2, '0') + ':' + 
                                String(date.getMinutes()).padStart(2, '0') + ':' + 
                                String(date.getSeconds()).padStart(2, '0');
-                    rh += '<div class="record">';
+                    
+                    var isHidden = j >= showCount;
+                    var hiddenClass = isHidden ? 'record-item-hidden' : '';
+                    
+                    rh += '<div class="record ' + hiddenClass + '" data-index="' + (j + 1) + '">';
                     rh += '<div><span class="r-from">' + t.from_nickname + '</span> → <span class="r-to">' + t.to_nickname + '</span>';
                     rh += '<div class="r-time">' + time + '</div></div>';
                     rh += '<div class="r-amount">' + t.amount + ' 分</div>';
                     rh += '</div>';
                 }
+                
+                if (hasHidden) {
+                    var hiddenCount = totalRecords - showCount;
+                    var isExpanded = recordsExpanded;
+                    var btnText = isExpanded ? '收起' : '展开更多 (' + hiddenCount + ' 条)';
+                    var arrowSymbol = isExpanded ? '▲' : '▼';
+                    var arrowClass = isExpanded ? 'open' : '';
+                    rh += '<button class="record-more-btn" onclick="toggleRecords()">' + btnText + ' <span class="arrow ' + arrowClass + '">' + arrowSymbol + '</span></button>';
+                }
+                
                 if (rec.innerHTML !== rh) {
                     rec.innerHTML = rh;
+                    // 如果之前已展开，重新展开
+                    if (recordsExpanded) {
+                        document.querySelectorAll('.record-item-hidden').forEach(function(item) {
+                            item.classList.add('show');
+                        });
+                        var btn = document.getElementById('recordMoreBtn');
+                        if (btn) {
+                            btn.innerHTML = '收起 <span class="arrow open">▲</span>';
+                        }
+                    }
                 }
             }
         }
