@@ -67,7 +67,7 @@
         }
         
         .my-card {
-            background: white; border-radius: 16px; padding: 16px 18px;
+            background: azure; border-radius: 16px; padding: 16px 18px;
             margin-bottom: 6px; display: flex; align-items: center; gap: 14px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 2px solid #667eea;
         }
@@ -145,7 +145,7 @@
         .record .r-from { color: #ff6b6b; font-weight: 600; }
         .record .r-to { color: #2ed573; font-weight: 600; }
         .record .r-time { font-size: 12px; color: #bbb; }
-        .record .r-amount { font-weight: 700; font-size: 16px; color: #667eea; }
+        .record .r-amount { font-weight: 700; font-size: 20px; color: #667eea; }
         
         /* ===== 转让记录折叠 ===== */
         .record-more-btn {
