@@ -140,7 +140,7 @@
         }
         .records h3 { font-size: 16px; color: #333; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
         
-        .record { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f8f8f8; }
+        .record { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f8f8f8; }
         .record:last-child { border-bottom: none; }
         .record .r-from { color: #ff6b6b; font-weight: 600; }
         .record .r-to { color: #2ed573; font-weight: 600; }
