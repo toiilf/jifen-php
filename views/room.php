@@ -67,8 +67,8 @@
         }
         
         .my-card {
-            background: azure; border-radius: 16px; padding: 16px 18px;
-            margin-bottom: 6px; display: flex; align-items: center; gap: 14px;
+            background: white; border-radius: 16px; padding: 6px 16px;
+            margin-bottom: 4px; display: flex; align-items: center; gap: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 2px solid #667eea;
         }
         
@@ -76,7 +76,7 @@
             width: 46px; height: 46px; min-width: 46px; border-radius: 50%;
             background: linear-gradient(135deg, #667eea, #764ba2); color: white;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: 700;
+            font-size: 22px; font-weight: 700;
         }
         
         .my-card .my-info { flex: 1; }
@@ -96,11 +96,11 @@
             margin: 16px 0 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         
-        .players { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+        .players { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
         
         .player {
-            background: white; border-radius: 16px; padding: 18px 20px;
-            display: flex; align-items: center; gap: 14px;
+            background: white; border-radius: 16px; padding: 4px 16px;
+            display: flex; align-items: center; gap: 12px;
             cursor: pointer; transition: all 0.15s;
             box-shadow: 0 2px 12px rgba(0,0,0,0.08);
         }
@@ -118,7 +118,7 @@
         }
         
         .player .p-avatar {
-            width: 50px; height: 50px; min-width: 50px; border-radius: 50%;
+            width: 46px; height: 46px; min-width: 46px; border-radius: 50%;
             background: linear-gradient(135deg, #a8e6cf, #88d8b0);
             display: flex; align-items: center; justify-content: center;
             font-size: 22px; font-weight: 700; color: #3d7a5c;
@@ -132,7 +132,7 @@
         .player .p-score span { font-size: 13px; font-weight: 500; color: #999; }
         .player .owner-tag { background: #fff3cd; color: #856404; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
         
-        .empty { color: rgba(255,255,255,0.7); text-align: center; padding: 30px; font-size: 15px; }
+        .empty { color: rgba(255,255,255,255); text-align: center; padding: 30px; font-size: 15px; }
         
         .records {
             background: white; border-radius: 20px; padding: 16px;
@@ -140,12 +140,12 @@
         }
         .records h3 { font-size: 16px; color: #333; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
         
-        .record { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f8f8f8; }
+        .record { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid #f8f8f8; }
         .record:last-child { border-bottom: none; }
         .record .r-from { color: #ff6b6b; font-weight: 600; }
         .record .r-to { color: #2ed573; font-weight: 600; }
         .record .r-time { font-size: 12px; color: #bbb; }
-        .record .r-amount { font-weight: 700; font-size: 20px; color: #667eea; }
+        .record .r-amount { font-weight: 700; font-size: 16px; color: #667eea; }
         
         /* ===== 转让记录折叠 ===== */
         .record-more-btn {
@@ -318,7 +318,8 @@
             </div>
             <div class="score" id="myScore"><?php echo $myPlayer['current_score'] ?? 0; ?> <span>分</span></div>
         </div>
-        
+        <!--<div style="color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 500; margin-bottom: 6px; padding-left: 4px;">👥 玩家列表（点击玩家转让积分）-->
+        <!--</div>-->
         <div class="players" id="playersList">
             <?php if (count($otherPlayers) > 0): ?>
                 <?php foreach ($otherPlayers as $p): ?>
