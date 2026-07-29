@@ -14,10 +14,8 @@ class Router_Room {
         
         $db = db();
         $room = $db->fetchOne(
-            "SELECT r.*, u.nickname as creator_name 
-             FROM rooms r 
-             JOIN users u ON r.creator_id = u.id 
-             WHERE r.id = ?",
+            "SELECT r.*, u.nickname as creator_name FROM rooms r 
+             JOIN users u ON r.creator_id = u.id WHERE r.id = ?",
             [$roomId]
         );
         
@@ -59,6 +57,16 @@ class Router_Room {
             $myPlayer = ['current_score' => 0, 'nickname' => $_SESSION['user']['nickname']];
         }
         
+        // 获取茶水费总额
+        $teaFeeTotal = 0;
+        if ($room['tea_fee_enabled']) {
+            $teaFeeResult = $db->fetchOne(
+                'SELECT COALESCE(SUM(amount), 0) as total FROM tea_fee_records WHERE room_id = ?',
+                [$roomId]
+            );
+            $teaFeeTotal = $teaFeeResult['total'] ?? 0;
+        }
+        
         $transfers = $db->fetchAll(
             "SELECT st.*, fu.nickname as from_nickname, tu.nickname as to_nickname 
              FROM score_transfers st 
@@ -78,6 +86,7 @@ class Router_Room {
             'myPlayer' => $myPlayer,
             'otherPlayers' => $otherPlayers,
             'transfers' => $transfers,
+            'teaFeeTotal' => $teaFeeTotal,
             'userId' => $userId,
             'user' => $_SESSION['user'],
             'showGuide' => $showGuide

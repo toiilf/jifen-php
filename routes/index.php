@@ -228,6 +228,12 @@ class Router_Index {
     }
     
     public function installPost() {
+        // 如果已安装，禁止安装
+        if (isInstalled()) {
+            redirect('/');
+            return;
+        }
+        
         $db_host = $_POST['db_host'] ?? 'localhost';
         $db_port = $_POST['db_port'] ?? 3306;
         $db_user = $_POST['db_user'] ?? 'root';
@@ -237,8 +243,9 @@ class Router_Index {
         $admin_password = $_POST['admin_password'] ?? '';
         $admin_password_confirm = $_POST['admin_password_confirm'] ?? '';
         $db_ssl = isset($_POST['db_ssl']);
-        $clearData = isset($_POST['clear_data']);  // 新增：清空数据
+        $clearData = isset($_POST['clear_data']);
         
+        // 验证密码
         if ($admin_password !== $admin_password_confirm) {
             redirect('/install?error=' . urlencode('两次密码不一致'));
             return;
@@ -263,9 +270,7 @@ class Router_Index {
             $stmt = $pdo->query("SHOW DATABASES LIKE '$db_name'");
             $dbExists = $stmt->rowCount() > 0;
             
-            // ============================================================
             // 如果勾选了清空数据，删除并重建数据库
-            // ============================================================
             if ($dbExists && $clearData) {
                 $pdo->exec("DROP DATABASE IF EXISTS `$db_name`");
                 $dbExists = false;
@@ -284,7 +289,6 @@ class Router_Index {
             $tablesExist = $stmt->rowCount() > 0;
             
             if ($tablesExist && !$clearData) {
-                // 表已存在且未勾选清空，提示用户
                 render('install', [
                     'title' => '系统安装',
                     'error' => '数据库表已存在。如需清空数据重新安装，请勾选「清空现有数据」选项。',
@@ -300,11 +304,127 @@ class Router_Index {
             }
             
             // ============================================================
-            // 创建所有表
+            // 创建所有表（包含茶水费相关）
             // ============================================================
-            $this->createTables($pdo);
             
+            // 1. 用户表
+            $pdo->exec("CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                nickname VARCHAR(50),
+                avatar VARCHAR(255) DEFAULT 'default.png',
+                total_games INT DEFAULT 0,
+                wins INT DEFAULT 0,
+                total_score BIGINT DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_username (username),
+                INDEX idx_nickname (nickname),
+                INDEX idx_created_at (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // 2. 管理员表
+            $pdo->exec("CREATE TABLE IF NOT EXISTS admins (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_admin_username (username)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // 3. 房间表（增加 tea_fee_enabled 字段）
+            $pdo->exec("CREATE TABLE IF NOT EXISTS rooms (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                room_name VARCHAR(100) NOT NULL,
+                creator_id INT NOT NULL,
+                password VARCHAR(255),
+                max_players INT DEFAULT 4,
+                tea_fee_enabled TINYINT(1) DEFAULT 0,
+                status ENUM('waiting','playing','finished') DEFAULT 'waiting',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
+                INDEX idx_room_name (room_name),
+                INDEX idx_creator_id (creator_id),
+                INDEX idx_status (status),
+                INDEX idx_created_at (created_at),
+                INDEX idx_status_created (status, created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // 4. 房间玩家表
+            $pdo->exec("CREATE TABLE IF NOT EXISTS room_players (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                room_id INT NOT NULL,
+                user_id INT NOT NULL,
+                seat_number INT NOT NULL,
+                current_score BIGINT DEFAULT 0,
+                join_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                UNIQUE KEY unique_room_user (room_id, user_id),
+                INDEX idx_room_user (room_id, user_id),
+                INDEX idx_room_id (room_id),
+                INDEX idx_user_id (user_id),
+                INDEX idx_seat_number (seat_number),
+                INDEX idx_current_score (current_score),
+                INDEX idx_room_score (room_id, current_score DESC)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // 5. 积分转让表（增加 tea_fee 类型）
+            $pdo->exec("CREATE TABLE IF NOT EXISTS score_transfers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                room_id INT NOT NULL,
+                from_user_id INT NOT NULL,
+                to_user_id INT NOT NULL,
+                amount BIGINT NOT NULL,
+                transfer_type ENUM('win','lose','transfer','tea_fee') DEFAULT 'transfer',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+                FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE,
+                INDEX idx_room_id (room_id),
+                INDEX idx_from_user_id (from_user_id),
+                INDEX idx_to_user_id (to_user_id),
+                INDEX idx_created_at (created_at DESC),
+                INDEX idx_room_created (room_id, created_at DESC),
+                INDEX idx_user_from (from_user_id, created_at DESC),
+                INDEX idx_user_to (to_user_id, created_at DESC),
+                INDEX idx_transfer_type (transfer_type)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // 6. 游戏记录表
+            $pdo->exec("CREATE TABLE IF NOT EXISTS game_records (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                room_id INT NOT NULL,
+                winner_id INT NOT NULL,
+                total_pot BIGINT DEFAULT 0,
+                game_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+                FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE,
+                INDEX idx_room_id (room_id),
+                INDEX idx_winner_id (winner_id),
+                INDEX idx_game_date (game_date DESC),
+                INDEX idx_room_date (room_id, game_date DESC),
+                INDEX idx_winner_date (winner_id, game_date DESC)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // 7. 茶水费记录表（新增）
+            $pdo->exec("CREATE TABLE IF NOT EXISTS tea_fee_records (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                room_id INT NOT NULL,
+                from_user_id INT NOT NULL,
+                amount BIGINT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+                FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
+                INDEX idx_room_id (room_id),
+                INDEX idx_created_at (created_at DESC)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            
+            // ============================================================
             // 创建管理员账号
+            // ============================================================
             $hashedPassword = password_hash($admin_password, PASSWORD_DEFAULT);
             $existingAdmin = $pdo->prepare("SELECT id FROM admins WHERE username = ?");
             $existingAdmin->execute([$admin_user]);
@@ -316,158 +436,70 @@ class Router_Index {
                 $stmt->execute([$admin_user, $hashedPassword]);
             }
             
+            // ============================================================
             // 生成 .env 文件
-            $this->generateEnvFile($db_host, $db_port, $db_user, $db_password, $db_name, $db_ssl);
-            $this->createLockFiles();
+            // ============================================================
+            $sessionSecret = bin2hex(random_bytes(32));
+            $envContent = "DB_HOST=$db_host\n";
+            $envContent .= "DB_PORT=$db_port\n";
+            $envContent .= "DB_USER=$db_user\n";
+            $envContent .= "DB_PASSWORD=$db_password\n";
+            $envContent .= "DB_NAME=$db_name\n";
+            if ($db_ssl) {
+                $envContent .= "DB_SSL=true\n";
+            }
+            $envContent .= "SESSION_SECRET=$sessionSecret\n";
+            $envContent .= "PORT=3000\n";
+            $envContent .= "TIMEZONE=Asia/Shanghai\n";
             
-            render('install', [
-                'title' => '系统安装',
-                'error' => null,
-                'success' => '安装完成！' . ($clearData ? ' 已清空并重建数据库。' : ''),
-                'admin_user' => $admin_user,
-                'db_name' => $db_name,
-                'db_host' => $db_host,
-                'db_port' => $db_port,
-                'db_user' => $db_user,
-                'db_password' => $db_password
-            ]);
+            $rootPath = realpath(__DIR__ . '/../');
+            $envPath = $rootPath . '/.env';
+            $installedPath = $rootPath . '/.installed';
+            $lockPath = $rootPath . '/install.lock';
+            
+            file_put_contents($envPath, $envContent);
+            file_put_contents($installedPath, 'installed');
+            file_put_contents($lockPath, date('Y-m-d H:i:s') . ' - 安装完成');
+            
+            $installSuccess = file_exists($installedPath) && file_exists($lockPath);
+            
+            if ($installSuccess) {
+                render('install', [
+                    'title' => '系统安装',
+                    'error' => null,
+                    'success' => '安装完成！',
+                    'admin_user' => $admin_user,
+                    'db_name' => $db_name,
+                    'db_host' => $db_host,
+                    'db_port' => $db_port,
+                    'db_user' => $db_user,
+                    'db_password' => $db_password
+                ]);
+            } else {
+                render('install', [
+                    'title' => '系统安装',
+                    'error' => '安装完成但无法创建锁定文件，请检查目录权限后手动创建 install.lock 文件',
+                    'success' => null,
+                    'db_host' => $db_host,
+                    'db_port' => $db_port,
+                    'db_user' => $db_user,
+                    'db_password' => $db_password,
+                    'db_name' => $db_name,
+                    'admin_user' => $admin_user
+                ]);
+            }
             
         } catch (Exception $e) {
             redirect('/install?error=' . urlencode('安装失败：' . $e->getMessage()));
         }
     }
     
-    // ============================================================
-    // 辅助方法：创建表
-    // ============================================================
-    private function createTables($pdo) {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL,
-            nickname VARCHAR(50),
-            avatar VARCHAR(255) DEFAULT 'default.png',
-            total_games INT DEFAULT 0,
-            wins INT DEFAULT 0,
-            total_score BIGINT DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            INDEX idx_username (username),
-            INDEX idx_nickname (nickname),
-            INDEX idx_created_at (created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        
-        $pdo->exec("CREATE TABLE IF NOT EXISTS admins (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_admin_username (username)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        
-        $pdo->exec("CREATE TABLE IF NOT EXISTS rooms (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            room_name VARCHAR(100) NOT NULL,
-            creator_id INT NOT NULL,
-            password VARCHAR(255),
-            max_players INT DEFAULT 4,
-            status ENUM('waiting','playing','finished') DEFAULT 'waiting',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
-            INDEX idx_room_name (room_name),
-            INDEX idx_creator_id (creator_id),
-            INDEX idx_status (status),
-            INDEX idx_created_at (created_at),
-            INDEX idx_status_created (status, created_at)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        
-        $pdo->exec("CREATE TABLE IF NOT EXISTS room_players (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            room_id INT NOT NULL,
-            user_id INT NOT NULL,
-            seat_number INT NOT NULL,
-            current_score BIGINT DEFAULT 0,
-            join_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            UNIQUE KEY unique_room_user (room_id, user_id),
-            INDEX idx_room_user (room_id, user_id),
-            INDEX idx_room_id (room_id),
-            INDEX idx_user_id (user_id),
-            INDEX idx_seat_number (seat_number),
-            INDEX idx_current_score (current_score),
-            INDEX idx_room_score (room_id, current_score DESC)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        
-        $pdo->exec("CREATE TABLE IF NOT EXISTS score_transfers (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            room_id INT NOT NULL,
-            from_user_id INT NOT NULL,
-            to_user_id INT NOT NULL,
-            amount BIGINT NOT NULL,
-            transfer_type ENUM('win','lose','transfer') DEFAULT 'transfer',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
-            FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE,
-            INDEX idx_room_id (room_id),
-            INDEX idx_from_user_id (from_user_id),
-            INDEX idx_to_user_id (to_user_id),
-            INDEX idx_created_at (created_at DESC),
-            INDEX idx_room_created (room_id, created_at DESC),
-            INDEX idx_user_from (from_user_id, created_at DESC),
-            INDEX idx_user_to (to_user_id, created_at DESC),
-            INDEX idx_transfer_type (transfer_type)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        
-        $pdo->exec("CREATE TABLE IF NOT EXISTS game_records (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            room_id INT NOT NULL,
-            winner_id INT NOT NULL,
-            total_pot BIGINT DEFAULT 0,
-            game_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
-            FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE,
-            INDEX idx_room_id (room_id),
-            INDEX idx_winner_id (winner_id),
-            INDEX idx_game_date (game_date DESC),
-            INDEX idx_room_date (room_id, game_date DESC),
-            INDEX idx_winner_date (winner_id, game_date DESC)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    }
-    
-    // ============================================================
-    // 辅助方法：生成 .env 文件
-    // ============================================================
-    private function generateEnvFile($db_host, $db_port, $db_user, $db_password, $db_name, $db_ssl) {
-        $sessionSecret = bin2hex(random_bytes(32));
-        $envContent = "DB_HOST=$db_host\n";
-        $envContent .= "DB_PORT=$db_port\n";
-        $envContent .= "DB_USER=$db_user\n";
-        $envContent .= "DB_PASSWORD=$db_password\n";
-        $envContent .= "DB_NAME=$db_name\n";
-        if ($db_ssl) {
-            $envContent .= "DB_SSL=true\n";
-        }
-        $envContent .= "SESSION_SECRET=$sessionSecret\n";
-        $envContent .= "PORT=3000\n";
-        $envContent .= "TIMEZONE=Asia/Shanghai\n";
-        
-        $envPath = realpath(__DIR__ . '/../') . '/.env';
-        file_put_contents($envPath, $envContent);
-    }
-    
-    // ============================================================
-    // 辅助方法：创建锁定文件
-    // ============================================================
-    private function createLockFiles() {
-        $rootPath = realpath(__DIR__ . '/../');
-        file_put_contents($rootPath . '/.installed', 'installed');
-        file_put_contents($rootPath . '/install.lock', date('Y-m-d H:i:s') . ' - 安装完成');
-    }
-    
+    /**
+     * 卸载/解锁安装（删除锁定文件）
+     * 访问 /uninstall 即可解锁，允许重新安装
+     */
     public function uninstall() {
+        // 检查是否是管理员
         if (!isAdmin()) {
             render('error', [
                 'title' => '权限不足', 

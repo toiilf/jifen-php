@@ -40,7 +40,7 @@ class Router_Lobby {
         $db = db();
         
         $rooms = $db->fetchAll(
-            "SELECT r.id, r.room_name, r.password, r.max_players, r.status, 
+            "SELECT r.id, r.room_name, r.password, r.max_players, r.status, r.tea_fee_enabled,
                     u.nickname as creator_name,
                     (SELECT COUNT(*) FROM room_players WHERE room_id = r.id) as player_count 
              FROM rooms r 
@@ -61,12 +61,18 @@ class Router_Lobby {
         $room_name = trim($data['room_name'] ?? '');
         $password = $data['password'] ?? null;
         $max_players = intval($data['max_players'] ?? 4);
+        $tea_fee_enabled = isset($data['tea_fee_enabled']) && $data['tea_fee_enabled'] === true ? 1 : 0;
         $userId = $_SESSION['user']['id'];
+        
+        if (!$room_name) {
+            jsonResponse(['success' => false, 'message' => '请输入房间名称']);
+            return;
+        }
         
         $db = db();
         $roomId = $db->insert(
-            'INSERT INTO rooms (room_name, creator_id, password, max_players) VALUES (?, ?, ?, ?)',
-            [$room_name, $userId, $password ?: null, $max_players]
+            'INSERT INTO rooms (room_name, creator_id, password, max_players, tea_fee_enabled) VALUES (?, ?, ?, ?, ?)',
+            [$room_name, $userId, $password ?: null, $max_players, $tea_fee_enabled]
         );
         
         $db->insert(
@@ -134,7 +140,7 @@ class Router_Lobby {
         
         $db->insert(
             'INSERT INTO room_players (room_id, user_id, seat_number) VALUES (?, ?, ?)',
-            [$room['id'], $userId, $maxSeat['next_seat']]
+            [$room['id'], $userId, $maxSeat['next_seat'] ?? 1]
         );
         
         jsonResponse(['success' => true, 'room_id' => $room['id']]);
