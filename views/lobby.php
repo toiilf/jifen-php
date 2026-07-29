@@ -3,22 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- ===== SEO 信息 ===== -->
-    <title>游戏大厅 - 打牌记分系统 | 在线记分平台</title>
-    <meta name="description" content="打牌记分系统游戏大厅，创建房间或加入已有房间开始记分。支持多人实时记分、积分转让、历史记录。适合打牌、麻将、桌游等场景。">
-    <meta name="keywords" content="打牌记分系统,游戏大厅,在线记分,创建房间,加入房间,麻将记分,桌游记分">
-    <meta name="author" content="打牌记分系统">
-    <meta name="robots" content="index, follow">
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="游戏大厅 - 打牌记分系统">
-    <meta property="og:description" content="创建房间或加入已有房间，开始多人实时记分。支持积分转让、历史记录。">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="<?php echo 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>">
-    <meta property="og:site_name" content="打牌记分系统">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="<?php echo 'http://' . $_SERVER['HTTP_HOST']; ?>/lobby">
+    <title>计分系统 - 在线计分统计工具</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -106,7 +91,6 @@
         .room-entry .room-info { flex: 1; min-width: 0; cursor: pointer; }
         .room-entry .room-name { font-size: 14px; font-weight: 600; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .room-entry .room-meta { font-size: 11px; color: #999; margin-top: 2px; }
-        
         .room-entry .room-btn {
             border: none; padding: 6px 14px; border-radius: 14px;
             font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
@@ -142,6 +126,83 @@
         .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
         .btn-secondary { background: #f0f0f0; color: #666; }
         .btn-save { background: #28a745; color: white; }
+        
+        .tea-fee-option {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .tea-fee-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+        }
+        .tea-fee-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .tea-fee-option .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+            padding-left: 30px;
+        }
+        
+        /* ===== 使用帮助 ===== */
+        .help-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 20px 18px;
+            margin-top: 16px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+        
+        .help-section h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .help-section .help-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .help-section .help-item:last-child {
+            border-bottom: none;
+        }
+        
+        .help-section .help-icon {
+            font-size: 24px;
+            min-width: 36px;
+            text-align: center;
+        }
+        
+        .help-section .help-content {
+            flex: 1;
+        }
+        
+        .help-section .help-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .help-section .help-desc {
+            font-size: 13px;
+            color: #888;
+            margin-top: 2px;
+            line-height: 1.5;
+        }
         
         @media (max-width: 420px) {
             .big-cards { grid-template-columns: 1fr; }
@@ -182,6 +243,53 @@
             <div class="section-title">🚪 我已加入的房间</div>
             <div class="room-list" id="joinedRoomList"></div>
         </div>
+        
+        <!-- ===== 使用帮助（仅在无房间时显示） ===== -->
+        <div id="helpSection" style="display:none;" class="help-section">
+            <h3>💡 快速上手</h3>
+            <div class="help-item">
+                <div class="help-icon">🏠</div>
+                <div class="help-content">
+                    <div class="help-title">创建房间</div>
+                    <div class="help-desc">点击「创建房间」，设置房间名称和密码，邀请好友加入</div>
+                </div>
+            </div>
+            <div class="help-item">
+                <div class="help-icon">🔍</div>
+                <div class="help-content">
+                    <div class="help-title">加入房间</div>
+                    <div class="help-desc">点击「加入房间」，输入好友创建的房间名称和密码即可加入</div>
+                </div>
+            </div>
+            <div class="help-item">
+                <div class="help-icon">🍵</div>
+                <div class="help-content">
+                    <div class="help-title">茶水费</div>
+                    <div class="help-desc">创建房间时勾选「开启茶水费」，房间内每位玩家可贡献积分到公共茶水费池</div>
+                </div>
+            </div>
+            <div class="help-item">
+                <div class="help-icon">💸</div>
+                <div class="help-content">
+                    <div class="help-title">积分转让</div>
+                    <div class="help-desc">在房间中点击其他玩家，输入金额即可转让积分</div>
+                </div>
+            </div>
+            <div class="help-item">
+                <div class="help-icon">📊</div>
+                <div class="help-content">
+                    <div class="help-title">查看记录</div>
+                    <div class="help-desc">点击顶部「📊 记录」查看您的历史游戏记录</div>
+                </div>
+            </div>
+            <div class="help-item">
+                <div class="help-icon">✏️</div>
+                <div class="help-content">
+                    <div class="help-title">修改信息</div>
+                    <div class="help-desc">点击顶部「👤 <?php echo htmlspecialchars($user['nickname'] ?? '昵称'); ?>」进入个人中心，修改昵称或密码</div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div class="modal" id="createModal">
@@ -202,6 +310,13 @@
                     <option value="4" selected>4人</option><option value="5">5人</option>
                     <option value="6">6人</option><option value="7">7人</option><option value="8">8人</option>
                 </select>
+            </div>
+            <div class="tea-fee-option">
+                <label>
+                    <input type="checkbox" id="teaFeeEnabled">
+                    🍵 开启茶水费
+                </label>
+                <div class="hint">开启后，每位玩家可以贡献茶水费，积分将存入公共茶水费池</div>
             </div>
             <button class="btn btn-primary" onclick="createRoom()">创建</button>
             <button class="btn btn-secondary" onclick="closeModal('createModal')">取消</button>
@@ -244,7 +359,6 @@
     <?php endif; ?>
     
     <script>
-        // ===== 房间列表轮询 =====
         var listTimer = null;
         var listRunning = true;
         
@@ -284,6 +398,7 @@
             if (id === 'createModal') { 
                 document.getElementById('roomName').value = ''; 
                 document.getElementById('roomPassword').value = ''; 
+                document.getElementById('teaFeeEnabled').checked = false;
             }
             if (id === 'joinModal') { 
                 document.getElementById('joinRoomName').value = ''; 
@@ -294,13 +409,16 @@
         function createRoom() {
             var name = document.getElementById('roomName').value.trim();
             if (!name) { alert('请输入房间名称'); return; }
+            var teaFeeEnabled = document.getElementById('teaFeeEnabled').checked;
+            
             fetch('/lobby/create-room', {
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     room_name: name, 
                     password: document.getElementById('roomPassword').value.trim(), 
-                    max_players: parseInt(document.getElementById('maxPlayers').value) 
+                    max_players: parseInt(document.getElementById('maxPlayers').value),
+                    tea_fee_enabled: teaFeeEnabled
                 })
             })
             .then(function(r) { return r.json(); })
@@ -355,37 +473,54 @@
         }
         
         function loadMyRooms() {
+            var hasAnyRooms = false;
+            
             fetch('/lobby/my-rooms')
             .then(function(r) { return r.json(); })
             .then(function(d) {
                 var section = document.getElementById('myRoomsSection');
                 if (d.success && d.rooms && d.rooms.length > 0) {
                     section.style.display = 'block';
+                    hasAnyRooms = true;
                     var html = '';
                     for (var i = 0; i < d.rooms.length; i++) {
                         var room = d.rooms[i];
-                        html += '<div class="room-entry"><div class="room-icon" onclick="enterRoom(' + room.id + ')">🏠</div><div class="room-info" onclick="enterRoom(' + room.id + ')"><div class="room-name">' + room.room_name + '</div><div class="room-meta">' + room.player_count + '/' + room.max_players + '人' + (room.password ? ' · 🔒' : '') + '</div></div><button class="room-btn btn-dismiss" data-room="' + room.id + '">解散</button></div>';
+                        var teaTag = room.tea_fee_enabled ? ' 🍵' : '';
+                        html += '<div class="room-entry"><div class="room-icon" onclick="enterRoom(' + room.id + ')">🏠</div><div class="room-info" onclick="enterRoom(' + room.id + ')"><div class="room-name">' + room.room_name + teaTag + '</div><div class="room-meta">' + room.player_count + '/' + room.max_players + '人' + (room.password ? ' · 🔒' : '') + '</div></div><button class="room-btn btn-dismiss" data-room="' + room.id + '">解散</button></div>';
                     }
                     document.getElementById('myRoomList').innerHTML = html;
                     bindButtons();
-                } else { section.style.display = 'none'; }
-            })
-            .catch(function() { /* 静默失败 */ });
-            
-            fetch('/lobby/joined-rooms')
-            .then(function(r) { return r.json(); })
-            .then(function(d) {
-                var section = document.getElementById('joinedRoomsSection');
-                if (d.success && d.rooms && d.rooms.length > 0) {
-                    section.style.display = 'block';
-                    var html = '';
-                    for (var i = 0; i < d.rooms.length; i++) {
-                        var room = d.rooms[i];
-                        html += '<div class="room-entry"><div class="room-icon" onclick="enterRoom(' + room.id + ')">🚪</div><div class="room-info" onclick="enterRoom(' + room.id + ')"><div class="room-name">' + room.room_name + '</div><div class="room-meta">房主：' + room.creator_name + ' · ' + room.player_count + '/' + room.max_players + '人</div></div><button class="room-btn btn-leave" data-room="' + room.id + '">退出</button></div>';
+                } else {
+                    section.style.display = 'none';
+                }
+                
+                // 检查加入的房间
+                fetch('/lobby/joined-rooms')
+                .then(function(r) { return r.json(); })
+                .then(function(d2) {
+                    var section2 = document.getElementById('joinedRoomsSection');
+                    if (d2.success && d2.rooms && d2.rooms.length > 0) {
+                        section2.style.display = 'block';
+                        hasAnyRooms = true;
+                        var html = '';
+                        for (var i = 0; i < d2.rooms.length; i++) {
+                            var room = d2.rooms[i];
+                            var teaTag = room.tea_fee_enabled ? ' 🍵' : '';
+                            html += '<div class="room-entry"><div class="room-icon" onclick="enterRoom(' + room.id + ')">🚪</div><div class="room-info" onclick="enterRoom(' + room.id + ')"><div class="room-name">' + room.room_name + teaTag + '</div><div class="room-meta">房主：' + room.creator_name + ' · ' + room.player_count + '/' + room.max_players + '人</div></div><button class="room-btn btn-leave" data-room="' + room.id + '">退出</button></div>';
+                        }
+                        document.getElementById('joinedRoomList').innerHTML = html;
+                        bindButtons();
+                    } else {
+                        section2.style.display = 'none';
                     }
-                    document.getElementById('joinedRoomList').innerHTML = html;
-                    bindButtons();
-                } else { section.style.display = 'none'; }
+                    
+                    // 控制帮助显示
+                    var helpSection = document.getElementById('helpSection');
+                    if (helpSection) {
+                        helpSection.style.display = hasAnyRooms ? 'none' : 'block';
+                    }
+                })
+                .catch(function() { /* 静默失败 */ });
             })
             .catch(function() { /* 静默失败 */ });
         }

@@ -66,37 +66,126 @@
             white-space: nowrap; text-decoration: none;
         }
         
+        /* ===== 我的卡片（高度与玩家卡片一致） ===== */
         .my-card {
-            background: white; border-radius: 16px; padding: 6px 16px;
-            margin-bottom: 4px; display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 2px solid #667eea;
+            background: white;
+            border-radius: 16px;
+            padding: 4px 16px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 2px solid #667eea;
         }
         
         .my-card .avatar {
-            width: 46px; height: 46px; min-width: 46px; border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2); color: white;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px; font-weight: 700;
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
         }
         
         .my-card .my-info { flex: 1; }
-        .my-card .name { font-size: 15px; font-weight: 700; color: #333; }
-        .my-card .label { font-size: 11px; color: #999; }
-        .my-card .score { font-size: 28px; font-weight: 800; color: #667eea; text-align: right; transition: color 0.3s; }
-        .my-card .score span { font-size: 13px; font-weight: 500; color: #999; }
+        .my-card .name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+        }
+        .my-card .label {
+            font-size: 11px;
+            color: #999;
+        }
+        .my-card .score {
+            font-size: 22px;
+            font-weight: 800;
+            color: #667eea;
+            text-align: right;
+            transition: color 0.3s;
+        }
+        .my-card .score span {
+            font-size: 13px;
+            font-weight: 500;
+            color: #999;
+        }
         .my-card .owner-badge {
             display: inline-block;
             background: linear-gradient(135deg, #ffc107, #ff9800);
-            color: white; padding: 2px 8px; border-radius: 10px;
-            font-size: 10px; font-weight: 600; margin-left: 6px;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 6px;
         }
         
-        .section-label {
-            color: white; font-size: 16px; font-weight: 700;
-            margin: 16px 0 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        /* ===== 茶水费卡片（独立一行，高度较小） ===== */
+        .tea-fee-card {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border-radius: 12px;
+            padding: 4px 16px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 2px solid #ffc107;
+            cursor: pointer;
+            transition: transform 0.15s;
+            min-height: 44px;
         }
         
-        .players { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+        .tea-fee-card:active {
+            transform: scale(0.98);
+        }
+        
+        .tea-fee-card .tea-icon {
+            font-size: 20px;
+            min-width: 32px;
+            text-align: center;
+        }
+        
+        .tea-fee-card .tea-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .tea-fee-card .tea-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #795548;
+        }
+        
+        .tea-fee-card .tea-hint {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .tea-fee-card .tea-score {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ff8f00;
+            text-align: right;
+            white-space: nowrap;
+        }
+        
+        .tea-fee-card .tea-score span {
+            font-size: 12px;
+            font-weight: 400;
+            color: #999;
+        }
+        
+        /* ===== 玩家列表 ===== */
+        .players { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
         
         .player {
             background: white; border-radius: 16px; padding: 4px 16px;
@@ -146,6 +235,17 @@
         .record .r-to { color: #2ed573; font-weight: 600; }
         .record .r-time { font-size: 12px; color: #bbb; }
         .record .r-amount { font-weight: 700; font-size: 16px; color: #667eea; }
+        
+        /* ===== 茶水费记录特殊样式 ===== */
+        .record.tea-fee-record .r-from {
+            color: #ff8f00;
+        }
+        .record.tea-fee-record .r-to {
+            color: #ff8f00;
+        }
+        .record.tea-fee-record .r-amount {
+            color: #ff8f00;
+        }
         
         /* ===== 转让记录折叠 ===== */
         .record-more-btn {
@@ -307,6 +407,7 @@
             <a href="/lobby" class="btn-back">返回大厅</a>
         </div>
         
+        <!-- ===== 我的卡片（高度与玩家卡片一致） ===== -->
         <div class="my-card">
             <div class="avatar"><?php echo htmlspecialchars(mb_substr($myPlayer['nickname'] ?? $user['nickname'], -1)); ?></div>
             <div class="my-info">
@@ -318,8 +419,20 @@
             </div>
             <div class="score" id="myScore"><?php echo $myPlayer['current_score'] ?? 0; ?> <span>分</span></div>
         </div>
-        <!--<div style="color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 500; margin-bottom: 6px; padding-left: 4px;">👥 玩家列表（点击玩家转让积分）-->
-        <!--</div>-->
+        
+        <!-- ===== 茶水费卡片（独立一行，高度较小） ===== -->
+        <?php if ($room['tea_fee_enabled']): ?>
+        <div class="tea-fee-card" id="teaFeeCard" onclick="showTeaFeeTransfer()" title="点击贡献茶水费">
+            <div class="tea-icon">🍵</div>
+            <div class="tea-info">
+                <span class="tea-name">茶水费</span>
+                <span class="tea-hint">点击贡献</span>
+            </div>
+            <div class="tea-score" id="teaFeeTotal"><?php echo $teaFeeTotal; ?><span>分</span></div>
+        </div>
+        <?php endif; ?>
+        
+        <!-- ===== 玩家列表 ===== -->
         <div class="players" id="playersList">
             <?php if (count($otherPlayers) > 0): ?>
                 <?php foreach ($otherPlayers as $p): ?>
@@ -340,6 +453,7 @@
             <?php endif; ?>
         </div>
         
+        <!-- ===== 转让记录 ===== -->
         <div class="records">
             <h3>📋 转让记录</h3>
             <div id="transferHistory">
@@ -353,10 +467,17 @@
                         <?php 
                             $index++;
                             $isHidden = $index > $showCount;
+                            $isTeaFee = ($t['transfer_type'] ?? '') === 'tea_fee';
+                            $teaFeeClass = $isTeaFee ? 'tea-fee-record' : '';
                         ?>
-                        <div class="record <?php echo $isHidden ? 'record-item-hidden' : ''; ?>" data-index="<?php echo $index; ?>">
+                        <div class="record <?php echo $isHidden ? 'record-item-hidden' : ''; ?> <?php echo $teaFeeClass; ?>" data-index="<?php echo $index; ?>">
                             <div>
-                                <span class="r-from"><?php echo htmlspecialchars($t['from_nickname']); ?></span> → <span class="r-to"><?php echo htmlspecialchars($t['to_nickname']); ?></span>
+                                <?php if ($isTeaFee): ?>
+                                    <span class="r-from">🍵 <?php echo htmlspecialchars($t['from_nickname']); ?></span> 
+                                    <span style="color:#999;font-size:12px;">贡献了茶水费</span>
+                                <?php else: ?>
+                                    <span class="r-from"><?php echo htmlspecialchars($t['from_nickname']); ?></span> → <span class="r-to"><?php echo htmlspecialchars($t['to_nickname']); ?></span>
+                                <?php endif; ?>
                                 <div class="r-time"><?php echo date('Y-m-d H:i:s', strtotime($t['created_at'])); ?></div>
                             </div>
                             <div class="r-amount"><?php echo $t['amount']; ?> 分</div>
@@ -374,6 +495,7 @@
             </div>
         </div>
         
+        <!-- ===== 邀请好友 ===== -->
         <div class="records">
             <h3>📤 邀请好友</h3>
             <div class="share-buttons">
@@ -383,8 +505,8 @@
         </div>
     </div>
     
+    <!-- ===== 积分转让弹出层 ===== -->
     <div class="overlay" id="overlay" onclick="cancelTransfer()"></div>
-    
     <div class="panel" id="panel">
         <h3>💸 转让给 <span class="target" id="targetName"></span></h3>
         <div class="row">
@@ -393,6 +515,20 @@
         </div>
         <button class="btn-cancel" onclick="cancelTransfer()">取消</button>
     </div>
+    
+    <!-- ===== 茶水费转让弹出层 ===== -->
+    <?php if ($room['tea_fee_enabled']): ?>
+    <div class="overlay" id="teaFeeOverlay" onclick="cancelTeaFeeTransfer()"></div>
+    <div class="panel" id="teaFeePanel">
+        <h3>🍵 贡献茶水费</h3>
+        <p style="text-align:center;font-size:13px;color:#999;margin-bottom:12px;">输入要贡献的积分，将转入茶水费池</p>
+        <div class="row">
+            <input type="number" id="teaFeeAmount" min="1" placeholder="输入金额" onkeyup="if(event.key==='Enter')doTeaFeeTransfer()">
+            <button class="btn-ok" onclick="doTeaFeeTransfer()" style="background:#ffc107;color:#333;">贡献</button>
+        </div>
+        <button class="btn-cancel" onclick="cancelTeaFeeTransfer()">取消</button>
+    </div>
+    <?php endif; ?>
     
     <?php if (isset($showGuide) && $showGuide): ?>
     <div class="modal show" id="editModal">
@@ -523,6 +659,61 @@
             }, 1600);
         }
         
+        // ===== 茶水费转让 =====
+        function showTeaFeeTransfer() {
+            document.getElementById('teaFeeOverlay').classList.add('show');
+            document.getElementById('teaFeePanel').classList.add('show');
+            document.getElementById('teaFeeAmount').value = '';
+            setTimeout(function() { document.getElementById('teaFeeAmount').focus(); }, 300);
+        }
+        
+        function cancelTeaFeeTransfer() {
+            document.getElementById('teaFeeOverlay').classList.remove('show');
+            document.getElementById('teaFeePanel').classList.remove('show');
+        }
+        
+        function doTeaFeeTransfer() {
+            var amount = parseInt(document.getElementById('teaFeeAmount').value);
+            if (!amount || amount <= 0) { alert('请输入有效的金额'); return; }
+            
+            var btn = document.querySelector('#teaFeePanel .btn-ok');
+            btn.disabled = true;
+            btn.textContent = '提交中...';
+            
+            var csrfToken = getCsrfToken();
+            
+            fetch('/api/tea-fee-transfer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    room_id: roomId, 
+                    amount: amount,
+                    csrf_token: csrfToken
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) { 
+                if (d.success) { 
+                    cancelTeaFeeTransfer();
+                    showScoreAnimation(amount, false);
+                    setTimeout(function() {
+                        refreshData();
+                        flashMyScore();
+                    }, 300);
+                    setTimeout(refreshData, 1200);
+                } else { 
+                    alert(d.message || '贡献失败，请重试'); 
+                }
+            })
+            .catch(function(err) {
+                alert('网络错误，请重试');
+            })
+            .finally(function() {
+                btn.disabled = false;
+                btn.textContent = '贡献';
+            });
+        }
+        
         // ===== 页面可见性检测 =====
         document.addEventListener('visibilitychange', function() {
             state.pageVisible = !document.hidden;
@@ -615,7 +806,7 @@
             if (state.lastData === fingerprint) return;
             state.lastData = fingerprint;
             
-            // 更新我的积分
+            // ===== 更新我的积分 =====
             var myScore = 0;
             for (var i = 0; i < data.players.length; i++) {
                 if (data.players[i].user_id === userId) {
@@ -631,7 +822,16 @@
                 }
             }
             
-            // 更新人数
+            // ===== 更新茶水费总额 =====
+            var teaFeeTotalEl = document.getElementById('teaFeeTotal');
+            if (teaFeeTotalEl && data.teaFeeTotal !== undefined) {
+                var newTeaText = data.teaFeeTotal + '<span>分</span>';
+                if (teaFeeTotalEl.innerHTML !== newTeaText) {
+                    teaFeeTotalEl.innerHTML = newTeaText;
+                }
+            }
+            
+            // ===== 更新人数 =====
             var countEl = document.getElementById('playerCount');
             if (countEl && data.players) {
                 var newCount = data.players.length + '/' + data.room.max_players + '人';
@@ -640,7 +840,7 @@
                 }
             }
             
-            // 更新玩家列表
+            // ===== 更新玩家列表 =====
             var list = document.getElementById('playersList');
             if (!list || !data.players) return;
             
@@ -698,9 +898,16 @@
                     
                     var isHidden = j >= showCount;
                     var hiddenClass = isHidden ? 'record-item-hidden' : '';
+                    var isTeaFee = (t.transfer_type || '') === 'tea_fee';
+                    var teaFeeClass = isTeaFee ? 'tea-fee-record' : '';
                     
-                    rh += '<div class="record ' + hiddenClass + '" data-index="' + (j + 1) + '">';
-                    rh += '<div><span class="r-from">' + t.from_nickname + '</span> → <span class="r-to">' + t.to_nickname + '</span>';
+                    rh += '<div class="record ' + hiddenClass + ' ' + teaFeeClass + '" data-index="' + (j + 1) + '">';
+                    rh += '<div>';
+                    if (isTeaFee) {
+                        rh += '<span class="r-from">🍵 ' + t.from_nickname + '</span> <span style="color:#999;font-size:12px;">贡献了茶水费</span>';
+                    } else {
+                        rh += '<span class="r-from">' + t.from_nickname + '</span> → <span class="r-to">' + t.to_nickname + '</span>';
+                    }
                     rh += '<div class="r-time">' + time + '</div></div>';
                     rh += '<div class="r-amount">' + t.amount + ' 分</div>';
                     rh += '</div>';
@@ -748,6 +955,10 @@
         
         // ===== 选择玩家 =====
         function selectPlayer(id, name) {
+            if (id === userId) {
+                alert('不能给自己转让积分');
+                return;
+            }
             selectedId = id;
             document.getElementById('targetName').textContent = name;
             document.getElementById('amount').value = '';
@@ -771,7 +982,6 @@
         
         // ===== 转让积分（含防抖和动画） =====
         function doTransfer() {
-            // 防止重复点击
             if (transferLock) {
                 alert('正在处理中，请稍候...');
                 return;
@@ -803,16 +1013,13 @@
                 if (d.success) { 
                     cancelTransfer();
                     
-                    // ===== 显示转出动画（红色减分） =====
                     showScoreAnimation(amount, false);
                     
-                    // 延迟刷新数据，让动画先播放
                     setTimeout(function() {
                         refreshData();
                         flashMyScore();
                     }, 300);
                     
-                    // 额外刷新确保数据同步
                     setTimeout(refreshData, 1200);
                     
                 } else { 
@@ -884,12 +1091,10 @@
             });
         }
         
-        // ===== 页面关闭清理 =====
         window.addEventListener('beforeunload', function() {
             stopPolling();
         });
         
-        // ===== 启动 =====
         startPolling();
     </script>
 </body>
