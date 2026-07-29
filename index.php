@@ -71,6 +71,13 @@ elseif (preg_match('#^/room/(\d+)$#', $path, $matches)) {
     $actionName = 'show';
     $params = [$matches[1]];
 }
+
+elseif ($path === '/api/tea-fee-transfer') {
+    $controllerName = 'api';
+    $actionName = 'teaFeeTransfer';
+    $params = [];
+}
+
 elseif (preg_match('#^/room/leave/(\d+)$#', $path, $matches)) {
     $controllerName = 'room';
     $actionName = 'leave';
